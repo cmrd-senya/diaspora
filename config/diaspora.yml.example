@@ -609,6 +609,13 @@ configuration: ## Section
       #client_id: 'abcdef'
       #secret: 'change_me'
 
+    ## OAuth credentials for VK
+    vkontakte: ## Section
+
+      #enable: true
+      #app_id: 'abcdef'
+      #secret: 'change_me'
+
   ## Allow your pod to send emails for notifications, password recovery
   ## and other purposes (disabled by default).
   mail: ## Section

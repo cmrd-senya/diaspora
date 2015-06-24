@@ -1,5 +1,5 @@
 module Configuration
-  KNOWN_SERVICES = [:twitter, :tumblr, :facebook, :wordpress].freeze
+  KNOWN_SERVICES = [:twitter, :tumblr, :facebook, :wordpress, :vkontakte].freeze
 
   module Methods
     def pod_uri

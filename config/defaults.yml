@@ -173,6 +173,11 @@ defaults:
       key:
       secret:
       authorized: true
+    vkontakte:
+      enable: false
+      app_id:
+      secret:
+      authorized: true
   mail:
     enable: false
     sender_address: 'no-reply@example.org'

@@ -26,4 +26,20 @@ Rails.application.config.middleware.use OmniAuth::Builder do
   if AppConfig.services.wordpress.enable?
     provider :wordpress, AppConfig.services.wordpress.client_id, AppConfig.services.wordpress.secret
   end
+
+  if AppConfig.services.vkontakte.enable?
+    provider :vkontakte, AppConfig.services.vkontakte.app_id, AppConfig.services.vkontakte.secret,
+      {
+        :scope => 'wall',
+        :display => 'popup'
+      }
+  end
+
+  OmniAuth.config.full_host = lambda do |env|
+    if env['omniauth.strategy'].is_a?(OmniAuth::Strategies::Vkontakte)
+      'https://oauth.vk.com/blank.html'
+    else
+      nil
+  end
+end
 end

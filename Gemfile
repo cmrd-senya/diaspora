@@ -143,6 +143,8 @@ gem "omniauth-tumblr",    "1.1"
 gem "omniauth-twitter",   "1.2.0"
 gem "twitter",            "5.14.0"
 gem "omniauth-wordpress", "0.2.2"
+gem "omniauth-vkontakte", "1.3.3"
+gem "vkontakte_api",      "~> 1.4"
 
 # Serializers
 
