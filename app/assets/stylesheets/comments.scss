@@ -35,7 +35,6 @@
     }
     padding-left: 12px;
     width: 95%;
-    display: none;
   }
   .comment_box {
     width: 95%;
@@ -44,7 +43,6 @@
   }
   textarea.comment_box:focus, textarea.comment_box:valid, textarea.comment_box:active {
     border-color: $border-dark-grey;
-    & + .submit_button { display: block; }
     min-height: 35px;
     box-shadow: none;
   }

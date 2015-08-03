@@ -26,12 +26,19 @@ app.views.CommentStream = app.views.Base.extend({
   },
 
   postRenderTemplate : function() {
-    this.$("textarea").placeholder();
+    this.inputEl = this.$("textarea");
+
+    this.inputEl.placeholder();
     this.model.comments.each(this.appendComment, this);
 
     // add autoexpanders to new comment textarea
-    this.$("textarea").val(this.textareaValue);
-    autosize(this.$("textarea"));
+    this.inputEl.val(this.textareaValue);
+    autosize(this.inputEl);
+
+    // init mentions plugin
+    Mentions.initialize(this.inputEl);
+
+    this.inputEl.bind("textchange", $.noop);
   },
 
   presenter: function(){
@@ -74,7 +81,10 @@ app.views.CommentStream = app.views.Base.extend({
   },
 
   commentTextareaFocused: function(){
-    this.$("form").removeClass('hidden').addClass("open");
+//    Mentions.initialize(this.inputEl);
+//    if(this.model.attributes.public)
+    Mentions.fetchContacts();
+    this.$(".submit_button").removeClass("hidden");
   },
 
   storeTextareaValue: function(){
