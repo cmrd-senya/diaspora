@@ -3,6 +3,7 @@
 #   the COPYRIGHT file.
 #
 class Notification < ActiveRecord::Base
+  include Diaspora::Logging
   belongs_to :recipient, :class_name => 'User'
   has_many :notification_actors, :dependent => :destroy
   has_many :actors, :class_name => 'Person', :through => :notification_actors, :source => :person
@@ -15,6 +16,11 @@ class Notification < ActiveRecord::Base
   end
 
   def self.notify(recipient, target, actor)
+    logger.info "notify call"
+    logger.info "recipient: " + recipient.to_s + "\ntarget: " + target.to_s + "\nactor: " + actor.to_s
+    logger.info "call stack: "
+    logger.info caller.join("\n")
+
     return nil unless target.respond_to? :notification_type
 
     note_type = target.notification_type(recipient, actor)
