@@ -16,6 +16,14 @@ module Federated
     belongs_to :author, :class_name => 'Person'
     #end crazy ordering issues
 
+    def self.inherited(model)
+      super(model)
+
+      model.class_eval do
+        include Diaspora::SgnDbg unless model.abstract_class?
+      end
+    end
+
     validates_uniqueness_of :target_id, :scope => [:target_type, :author_id]
     validates :parent, :presence => true #should be in relayable (pending on fixing Message)
 

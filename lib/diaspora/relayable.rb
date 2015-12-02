@@ -3,6 +3,28 @@
 #   the COPYRIGHT file.
 
 module Diaspora
+  module SgnDbg
+    def author_signature
+      logger.info("# SGN_DBG ↳ #{__method__}\n     from " + caller[0..20].join("\n     from "))
+      super
+    end
+
+    def parent_author_signature
+      logger.info("# SGN_DBG ↳ #{__method__}\n     from " + caller[0..20].join("\n     from "))
+      super
+    end
+
+    def author_signature=(*args)
+      logger.info("# SGN_DBG ↳ #{__method__}\n     from " + caller[0..20].join("\n     from "))
+      super
+    end
+
+    def parent_author_signature=(*args)
+      logger.info("# SGN_DBG ↳ #{__method__}\n     from " + caller[0..20].join("\n     from "))
+      super
+    end
+  end
+
   module Relayable
     include Encryptable
 
@@ -24,6 +46,7 @@ module Diaspora
           parent.touch(:interacted_at) if parent.respond_to?(:interacted_at)
         end
 
+        include SgnDbg unless model.abstract_class?
       end
     end
 
