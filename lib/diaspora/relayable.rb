@@ -23,31 +23,8 @@ module Diaspora
         after_commit :on => :create do
           parent.touch(:interacted_at) if parent.respond_to?(:interacted_at)
         end
+
       end
-    end
-
-    def author_signature
-      logger.debug("# SGN_DBG ↳ #{__method__}\n     from " + caller[0..20].join("\n     from "))
-
-      super
-    end
-
-    def parent_author_signature
-      logger.debug("# SGN_DBG ↳ #{__method__}\n     from " + caller[0..20].join("\n     from "))
-
-      super
-    end
-
-    def author_signature=(*args)
-      logger.debug("# SGN_DBG ↳ #{__method__}\n     from " + caller[0..20].join("\n     from "))
-
-      super
-    end
-
-    def parent_author_signature=(*args)
-      logger.debug("# SGN_DBG ↳ #{__method__}\n     from " + caller[0..20].join("\n     from "))
-
-      super
     end
 
     def author_is_not_ignored
