@@ -15,6 +15,23 @@
   .section
     .title
       %h5.title-header
+        %i.entypo.plus
+        = "Crowdfunding!"
+    .content
+      %p
+        = "Lets give some love to diaspora* together by "
+        = link_to("funding", "https://www.indiegogo.com/projects/account-backup-and-restore-for-diaspora--3#/")
+        = "the account backup/restore feature development!"
+      %h4
+        %b{ style: "color: black" }
+          = link_to("Account migration!", "https://www.indiegogo.com/projects/account-backup-and-restore-for-diaspora--3#/")
+      = link_to "https://www.indiegogo.com/projects/account-backup-and-restore-for-diaspora--3#/" do
+        = image_tag "https://we.riseup.net/assets/279164/222+%283rd+copy%29.png", class: "img-responsive"
+
+
+  .section
+    .title
+      %h5.title-header
         = t('aspects.index.new_here.title')
     .content
       != t('aspects.index.new_here.follow', link: link_to("#"+t('shared.publisher.new_user_prefill.newhere'), tag_path(name: t('shared.publisher.new_user_prefill.newhere'))))
