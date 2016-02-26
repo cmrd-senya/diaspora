@@ -2,6 +2,23 @@
 -#   licensed under the Affero General Public License version 3 or later.  See
 -#   the COPYRIGHT file.
 
+#thecrowdfunding
+  .section
+    .title
+      %h5.title-header
+        %i.entypo.plus
+        = "Crowdfunding!"
+    .content
+      %p
+        = "Lets give some love to diaspora* together by "
+        = link_to("funding", "https://www.indiegogo.com/projects/account-backup-and-restore-for-diaspora--3#/")
+        = "the account backup/restore feature development!"
+      %h4
+        %b{ style: "color: black" }
+          = link_to("Account migration!", "https://www.indiegogo.com/projects/account-backup-and-restore-for-diaspora--3#/")
+      = link_to "https://www.indiegogo.com/projects/account-backup-and-restore-for-diaspora--3#/" do
+        = image_tag "https://we.riseup.net/assets/279164/222+%283rd+copy%29.png", :class => "media-object"
+
 
 - if AppConfig.settings.invitations.open?
   .section
