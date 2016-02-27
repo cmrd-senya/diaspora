@@ -1,12 +1,24 @@
 module Export
   class ContactSerializer < ActiveModel::Serializer
     attributes :sharing,
-               :receiving,
+               :following,
                :person_guid,
                :person_name,
                :person_first_name,
-               :person_diaspora_handle
+               :person_thefederation_uid
 
-    has_many :aspects, each_serializer: Export::AspectSerializer
+    has_many :contact_groups, each_serializer: Export::AspectSerializer
+
+    def following
+      object.receiving
+    end
+
+    def person_thefederation_uid
+      object.person_diaspora_handle
+    end
+
+    def contact_groups
+      object.aspects
+    end
   end
 end

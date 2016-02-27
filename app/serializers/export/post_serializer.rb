@@ -3,7 +3,7 @@ module Export
     attributes :guid,
                :text,
                :public,
-               :diaspora_handle,
+               :thefederation_uid,
                :type,
                :image_url,
                :image_height,
@@ -12,5 +12,9 @@ module Export
                :comments_count,
                :reshares_count,
                :created_at
+
+    def thefederation_uid
+      object.diaspora_handle
+    end
   end
 end

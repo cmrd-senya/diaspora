@@ -7,8 +7,12 @@ module Export
                :birthday,
                :location,
                :image_url,
-               :diaspora_handle,
+               :thefederation_uid,
                :searchable,
                :nsfw
+
+    def thefederation_uid
+      object.diaspora_handle
+    end
   end
 end

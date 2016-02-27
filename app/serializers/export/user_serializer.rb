@@ -4,7 +4,7 @@ module Export
                :email,
                :language,
                :username,
-               :serialized_private_key,
+               :private_key,
                :disable_mail,
                :show_community_spotlight_in_stream,
                :auto_follow_back,
@@ -20,5 +20,8 @@ module Export
       object.person.comments
     end
 
+    def private_key
+      object.serialized_private_key
+    end
   end
 end

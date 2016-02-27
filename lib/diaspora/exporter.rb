@@ -6,7 +6,7 @@ module Diaspora
 
   class Exporter
 
-    SERIALIZED_VERSION = '1.0'
+    SERIALIZED_VERSION = "1.1"
 
     def initialize(user)
       @user = user
