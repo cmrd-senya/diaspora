@@ -171,6 +171,15 @@
     .row
       .col-md-6#account_data
         %h3= t(".export_data")
+        = form_for current_user, url: user_path, html: {method: :put} do |f|
+          .form-group
+            = f.label :archive_password, t(".archive_password"), class: "col-sm-6 control-label"
+            .col-sm-6
+              = f.password_field :archive_password,
+                class: "form-control"
+          .clearfix
+            = f.submit t(".change"), class: "btn btn-primary pull-right"
+
         .form-group
           - if current_user.exporting
             .export-in-progress= t(".export_in_progress")

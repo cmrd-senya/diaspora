@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151003142048) do
+ActiveRecord::Schema.define(version: 20160227201803) do
 
   create_table "account_deletions", force: :cascade do |t|
     t.string   "diaspora_handle", limit: 255
@@ -652,6 +652,7 @@ ActiveRecord::Schema.define(version: 20151003142048) do
     t.datetime "exported_photos_at"
     t.boolean  "exporting_photos",                                 default: false
     t.string   "color_theme",                        limit: 255
+    t.string   "archive_password"
   end
 
   add_index "users", ["authentication_token"], name: "index_users_on_authentication_token", unique: true, using: :btree

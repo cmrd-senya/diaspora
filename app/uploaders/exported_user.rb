@@ -9,11 +9,11 @@ class ExportedUser < SecureUploader
   end
 
   def extension_white_list
-    %w(gz)
+    %w(bin)
   end
 
   def filename
-    "#{model.username}_diaspora_data_#{secure_token}.json.gz"
+    "#{model.username}_diaspora_data_#{secure_token}.bin"
   end
 
 end

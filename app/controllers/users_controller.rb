@@ -34,13 +34,7 @@ class UsersController < ApplicationController
         else
           flash[:error] = I18n.t 'users.update.password_not_changed'
         end
-      elsif u[:show_community_spotlight_in_stream] || u[:getting_started]
-        if @user.update_attributes(u)
-          flash[:notice] = I18n.t 'users.update.settings_updated'
-        else
-          flash[:notice] = I18n.t 'users.update.settings_not_updated'
-        end
-      elsif u[:strip_exif]
+      elsif u[:show_community_spotlight_in_stream] || u[:getting_started] || u[:archive_password] || u[:strip_exif]
         if @user.update_attributes(u)
           flash[:notice] = I18n.t 'users.update.settings_updated'
         else
@@ -197,6 +191,7 @@ class UsersController < ApplicationController
       :auto_follow_back_aspect_id,
       :remember_me,
       :getting_started,
+      :archive_password,
       email_preferences: [
         :someone_reported,
         :also_commented,

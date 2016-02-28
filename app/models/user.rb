@@ -311,8 +311,8 @@ class User < ActiveRecord::Base
   end
 
   def perform_export!
-    export = Tempfile.new([username, '.json.gz'], encoding: 'ascii-8bit')
-    export.write(compressed_export) && export.close
+    export = Tempfile.new([username, '.bin'], encoding: 'ascii-8bit')
+    export.write(encrypted_export) && export.close
     if export.present?
       update exporting: false, export: export, exported_at: Time.zone.now
     else
@@ -322,6 +322,18 @@ class User < ActiveRecord::Base
 
   def compressed_export
     ActiveSupport::Gzip.compress Diaspora::Exporter.new(self).execute
+  end
+
+  ARCHIVE_MAGIC = "D*ARCHIVE"
+
+  def encrypted_export
+    pass = self.archive_password
+    salt = OpenSSL::Random.random_bytes(16)
+    iter = 20000
+    cipher = OpenSSL::Cipher::AES256.new(:CBC).encrypt
+    cipher.key = key = OpenSSL::PKCS5.pbkdf2_hmac_sha1(pass, salt, iter, 32)
+    cipher.iv = iv = OpenSSL::Random.random_bytes(16)
+    ARCHIVE_MAGIC + salt + iv + cipher.update(compressed_export) + cipher.final
   end
 
   ######### Photos export ##################
