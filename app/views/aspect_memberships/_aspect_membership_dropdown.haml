@@ -9,7 +9,7 @@
         = t('shared.aspect_dropdown.toggle', :count => selected_aspects.size)
     %span.caret
 
-  %ul.dropdown-menu{:class => ["pull-#{hang}", defined?(dropdown_class) && dropdown_class], :unSelectable => 'on', 'data-person_id' => (person.id if defined?(person) && person), 'data-service_uid' => (service_uid if defined?(service_uid)), 'data-person-short-name' => (person.first_name if defined?(person) && person)}
+  %ul.dropdown-menu{:class => ["pull-#{hang}", defined?(dropdown_class) && dropdown_class], :unSelectable => 'on', 'data-person_id' => (person.diaspora_handle if defined?(person) && person), 'data-service_uid' => (service_uid if defined?(service_uid)), 'data-person-short-name' => (person.first_name if defined?(person) && person)}
     - for aspect in all_aspects
       %li.aspect_selector{ :class => ('selected' if aspect_membership_ids[aspect.id].present?), 'data-aspect_id' => aspect.id, 'data-membership_id' => aspect_membership_ids[aspect.id], :tabindex => '0' }
         %a

@@ -45,7 +45,7 @@ class AspectMembershipsController < ApplicationController
   end
 
   def create
-    @person = Person.find(params[:person_id])
+    @person = Person.find_or_fetch_by_identifier(params[:person_id])
     @aspect = current_user.aspects.where(id: params[:aspect_id]).first
 
     @contact = current_user.share_with(@person, @aspect)

@@ -239,13 +239,17 @@ class Person < ActiveRecord::Base
   def self.find_or_fetch_by_identifier(account)
     # exiting person?
     person = by_account_identifier(account)
-    return person if person.present? && person.profile.present?
+    return person if person.present? && person.profile.present? && person.contacts.count > 0
 
     # create or update person from webfinger
     logger.info "webfingering #{account}, it is not known or needs updating"
     DiasporaFederation::Discovery::Discovery.new(account).fetch_and_save
 
     by_account_identifier(account)
+  rescue DiasporaFederation::Discovery::DiscoveryError => exception
+    raise exception unless person && /.+404$/.match(exception.message)
+    person.lock_access!
+    person
   end
 
   # database calls
