@@ -14,14 +14,9 @@ class ContactsController < ApplicationController
       # Used by the mobile site
       format.mobile { set_up_contacts_mobile }
 
-      # Used for mentions in the publisher
+      # Used for pagination at contacts page
       format.json {
-        @people = if params[:q].present?
-                    Person.search(params[:q], current_user, only_contacts: true).limit(15)
-                  else
-                    set_up_contacts_json
-                  end
-        render json: @people
+        render json: set_up_contacts_json
       }
     end
   end

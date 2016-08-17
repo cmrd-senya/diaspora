@@ -30,7 +30,7 @@ class PeopleController < ApplicationController
     @aspect = :search
     limit = params[:limit] ? params[:limit].to_i : 15
 
-    @people = Person.search(search_query, current_user)
+    @people = Person.search(search_query, current_user, only_contacts: params[:only_contacts].presence)
 
     respond_to do |format|
       format.json do

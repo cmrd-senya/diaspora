@@ -32,7 +32,8 @@ app.views.PublisherMention = app.views.SearchBase.extend({
       typeaheadInput: this.typeaheadInput,
       customSearch: true,
       autoselect: true,
-      remoteRoute: "/contacts"
+      additionalQueryParameters: "&only_contacts=true",
+      remoteRoute: "/people"
     });
   },
 
