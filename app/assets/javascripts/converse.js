@@ -6,9 +6,9 @@ $(document).ready(function() {
     $.post("/user/auth_token", null, function(data) {
       if (converse && data.token) {
         converse.initialize({
-            bosh_service_url: $('script#converse').data('endpoint'),
+            bosh_service_url: $("script#converse").data("endpoint"),
             auto_login: true,
-            jid: app.currentUser.get('diaspora_id'),
+            jid: app.currentUser.get("diaspora_id"),
             password: data.token,
             debug: true,
             allow_registration: false,
@@ -16,8 +16,8 @@ $(document).ready(function() {
             keepalive: true
         });
       } else {
-        console.error('No token found! Authenticated!?');
+        console.error("No token found! Authenticated!?");
       }
-    }, 'json');
+    }, "json");
   }
 });
