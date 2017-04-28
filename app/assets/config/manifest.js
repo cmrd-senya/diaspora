@@ -3,6 +3,7 @@
 //= link jquery_ujs.js
 //= link main.js
 //= link jsxc.js
+//= link converse.js
 //= link bookmarklet.js
 //= link mobile/bookmarklet.js
 //= link mobile/mobile.js
