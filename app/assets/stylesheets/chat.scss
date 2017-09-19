@@ -12,3 +12,20 @@ body > .container-fluid.chat-roster-hidden {
   top: $navbar-height;
 }
 // scss-lint:enable IdSelector, SelectorFormat
+
+#conversejs {
+  top: 50px;
+  z-index: 1029;
+}
+
+#conversejs .toggle-controlbox {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+#conversejs .flyout {
+  position: fixed;
+  top: 52px;
+}
