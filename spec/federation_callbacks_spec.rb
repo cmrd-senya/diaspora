@@ -384,13 +384,14 @@ describe "diaspora federation callbacks" do
     end
 
     it "receives a entity for a recipient" do
+      user_id = FactoryGirl.create(:user).id
       received = Fabricate(:status_message_entity, author: remote_person.diaspora_handle)
       persisted = FactoryGirl.create(:status_message)
 
       expect(Diaspora::Federation::Receive).to receive(:perform).with(received).and_return(persisted)
-      expect(Workers::ReceiveLocal).to receive(:perform_async).with(persisted.class.to_s, persisted.id, [42])
+      expect(Workers::ReceiveLocal).to receive(:perform_async).with(persisted.class.to_s, persisted.id, [user_id])
 
-      DiasporaFederation.callbacks.trigger(:receive_entity, received, received.author, 42)
+      DiasporaFederation.callbacks.trigger(:receive_entity, received, received.author, user_id)
     end
 
     it "does not trigger a ReceiveLocal job if Receive.perform returned nil" do
@@ -400,6 +401,26 @@ describe "diaspora federation callbacks" do
       expect(Workers::ReceiveLocal).not_to receive(:perform_async)
 
       DiasporaFederation.callbacks.trigger(:receive_entity, received, received.author, nil)
+    end
+
+    context "with closed account" do
+      let(:user) { double }
+      let(:recipient_id) { 123 }
+
+      before do
+        expect(User).to receive(:find_by).with(id: recipient_id).and_return(user)
+        allow(user).to receive(:diaspora_handle)
+        expect(user).to receive(:closed_account?).and_return(true)
+      end
+
+      it "calls User#resend_account_close_event for recipient and raises InvalidRecipient" do
+        expect(Diaspora::Federation::Receive).not_to receive(:perform)
+        expect(user).to receive(:resend_account_close_event).with(remote_person.id)
+
+        expect {
+          DiasporaFederation.callbacks.trigger(:receive_entity, nil, remote_person.diaspora_handle, recipient_id)
+        }.to raise_error Diaspora::Federation::InvalidRecipient
+      end
     end
   end
 

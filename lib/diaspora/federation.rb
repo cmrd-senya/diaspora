@@ -9,6 +9,9 @@ module Diaspora
     # Raised, if the author of the existing object doesn't match the received author
     class InvalidAuthor < RuntimeError
     end
+
+    class InvalidRecipient < RuntimeError
+    end
   end
 end
 

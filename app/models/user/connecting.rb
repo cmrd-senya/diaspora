@@ -50,7 +50,16 @@ class User
       contact_for(person).try {|contact| disconnect_contact(contact, direction: :sharing, destroy: !contact.receiving) }
     end
 
+    # @param [Integer] target_id The ID of a person to inform about account deletion/migration
+    def resend_account_close_event(target_id)
+      Diaspora::Federation::Dispatcher.defer_dispatch(self, account_close_reason, subscriber_ids: [target_id])
+    end
+
     private
+
+    def account_close_reason
+      person.account_deletion || person.account_migration
+    end
 
     def disconnect_contact(contact, direction:, destroy:)
       if destroy

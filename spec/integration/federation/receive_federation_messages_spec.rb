@@ -152,24 +152,83 @@ describe "Receive federation messages feature" do
     let(:recipient) { alice }
 
     it "treats sharing request receive correctly" do
-      entity = Fabricate(:contact_entity, author: sender_id, recipient: alice.diaspora_handle)
+      entity = Fabricate(:contact_entity, author: sender_id, recipient: recipient.diaspora_handle)
 
       expect(Workers::ReceiveLocal).to receive(:perform_async).and_call_original
 
-      post_message(generate_payload(entity, sender, alice), alice)
+      post_message(generate_payload(entity, sender, recipient), recipient)
 
       expect(alice.contacts.count).to eq(2)
-      new_contact = alice.contacts.find {|c| c.person.diaspora_handle == sender_id }
+      new_contact = recipient.contacts.find {|c| c.person.diaspora_handle == sender_id }
       expect(new_contact).not_to be_nil
       expect(new_contact.sharing).to eq(true)
 
       expect(
         Notifications::StartedSharing.exists?(
-          recipient_id: alice.id,
+          recipient_id: recipient.id,
           target_type:  "Person",
           target_id:    sender.person.id
         )
       ).to be_truthy
+    end
+
+    context "with deleted recipient" do
+      before do
+        AccountDeletion.create(person: recipient.person).perform!
+      end
+
+      it "rejects the message and dispatches account deletion" do
+        entity = Fabricate(:contact_entity, author: sender_id, recipient: recipient.diaspora_handle)
+
+        expect(Workers::ReceiveLocal).not_to receive(:perform_async)
+        expect(Workers::SendPublic).to receive(:perform_async)
+          .with(
+            recipient.id,
+            "AccountDeletion:alice@localhost:9887",
+            ["http://remote-b.net/receive/public"],
+            kind_of(String)
+          )
+
+        expect {
+          post_message(generate_payload(entity, sender, recipient), recipient)
+        }.to raise_error(Diaspora::Federation::InvalidRecipient).and change(Contact, :count).by(0)
+        Sidekiq::Worker.drain_all # Run jobs planned during jobs
+      end
+    end
+
+    context "with moved recipient" do
+      let(:new_user) { create_remote_user("example.org") }
+      let(:account_migration) {
+        FactoryGirl.create(
+          :account_migration,
+          old_person: recipient.person,
+          new_person: new_user.person
+        )
+      }
+
+      before do
+        account_migration.create_signature(body: account_migration.send(:sign_with_key, new_user.encryption_key))
+        account_migration.save!
+        account_migration.perform!
+      end
+
+      it "rejects the message and dispatches account migration" do
+        entity = Fabricate(:contact_entity, author: sender_id, recipient: recipient.diaspora_handle)
+
+        expect(Workers::ReceiveLocal).not_to receive(:perform_async)
+        expect(Workers::SendPublic).to receive(:perform_async)
+          .with(
+            recipient.id,
+            "AccountMigration:#{recipient.diaspora_handle}:#{account_migration.new_person.diaspora_handle}",
+            ["http://remote-b.net/receive/public"],
+            kind_of(String)
+          )
+
+        expect {
+          post_message(generate_payload(entity, sender, recipient), recipient)
+        }.to raise_error(Diaspora::Federation::InvalidRecipient).and change(Contact, :count).by(0)
+        Sidekiq::Worker.drain_all # Run jobs planned during jobs
+      end
     end
 
     context "with sharing" do

@@ -42,7 +42,7 @@ describe Diaspora::Federation::Receive do
       Fabricate(:account_migration_entity, author: sender.diaspora_handle, profile: profile_entity)
     }
 
-    it "saves the account deletion" do
+    it "saves the account migration" do
       Diaspora::Federation::Receive.account_migration(account_migration_entity)
 
       expect(AccountMigration.exists?(old_person: sender, new_person: new_person)).to be_truthy

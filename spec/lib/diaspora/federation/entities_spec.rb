@@ -11,7 +11,7 @@ describe Diaspora::Federation::Entities do
     end
 
     it "builds an account migration" do
-      diaspora_entity = FactoryGirl.build(:account_migration)
+      diaspora_entity = FactoryGirl.build(:account_migration, new_person: alice.person)
       diaspora_entity.old_private_key = OpenSSL::PKey::RSA.generate(1024).export
       federation_entity = described_class.build(diaspora_entity)
 

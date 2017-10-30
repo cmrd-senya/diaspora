@@ -103,7 +103,8 @@ DiasporaFederation.configure do |config|
     end
 
     on :receive_entity do |entity, sender, recipient_id|
-      Person.by_account_identifier(sender).pod.try(:schedule_check_if_needed)
+      sender_person = Person.by_account_identifier(sender)
+      sender_person.pod.try(:schedule_check_if_needed)
 
       case entity
       when DiasporaFederation::Entities::AccountDeletion
@@ -111,6 +112,12 @@ DiasporaFederation.configure do |config|
       when DiasporaFederation::Entities::Retraction
         Diaspora::Federation::Receive.retraction(entity, recipient_id)
       else
+        recipient = User.find_by(id: recipient_id)
+        if recipient&.closed_account?
+          recipient.resend_account_close_event(sender_person.id)
+          raise Diaspora::Federation::InvalidRecipient,
+            "recipient account #{recipient.diaspora_handle} is closed; rejecting message #{entity}"
+        end
         persisted = Diaspora::Federation::Receive.perform(entity)
         Workers::ReceiveLocal.perform_async(persisted.class.to_s, persisted.id, [recipient_id].compact) if persisted
       end
