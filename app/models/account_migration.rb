@@ -2,16 +2,36 @@
 
 class AccountMigration < ApplicationRecord
   include Diaspora::Federated::Base
+  include DiasporaFederation::Entities::AccountMigrationSigner
 
   belongs_to :old_person, class_name: "Person"
   belongs_to :new_person, class_name: "Person"
 
+  # We store the new user's signature if it is an old home and we store the old user's signature if it is a new home
+  belongs_to :signature, optional: true
+
+  def signature_body
+    signature&.body
+  end
+
   validates :old_person, uniqueness: true
   validates :new_person, uniqueness: true
 
+  validate do
+    errors.add(:new_person, "can't be the same as old_person") if old_person == new_person
+  end
+
   after_create :lock_old_user!
+  before_validation :sign_with_old_key, if: :user_arrived_to_our_pod?
 
   attr_accessor :old_private_key
+
+  def signature_body=(signature_body)
+    return unless user_left_our_pod?
+    build_signature(body: signature_body)
+    verify_signature(new_person.diaspora_handle, :signature_body)
+    signature.save!
+  end
 
   def receive(*)
     perform!
@@ -56,7 +76,18 @@ class AccountMigration < ApplicationRecord
     end
   end
 
+  class NoPrivateKeyProvided < RuntimeError
+  end
+
   private
+
+  def old_user_id
+    old_person.diaspora_handle
+  end
+
+  def new_user_id
+    new_person.diaspora_handle
+  end
 
   # Normally pod initiates migration locally when the new user is local. Then the pod creates AccountMigration object
   # itself. If new user is remote, then AccountMigration object is normally received via the federation and this is
@@ -89,6 +120,14 @@ class AccountMigration < ApplicationRecord
     old_user && new_user
   end
 
+  def user_arrived_to_our_pod?
+    !old_user && new_user
+  end
+
+  def sign_with_old_key
+    create_signature(body: sign_with_key(sender.encryption_key))
+  end
+
   # We need to resend contacts of users of our pod for the remote new person so that the remote pod received this
   # contact information from the authoritative source.
   def dispatch_contacts
@@ -112,7 +151,7 @@ class AccountMigration < ApplicationRecord
   end
 
   def ephemeral_sender
-    raise "can't build sender without old private key defined" if old_private_key.nil?
+    raise NoPrivateKeyProvided, "can't build sender without old private key defined" if old_private_key.nil?
     EphemeralUser.new(old_person.diaspora_handle, old_private_key)
   end
 
@@ -127,7 +166,7 @@ class AccountMigration < ApplicationRecord
 
   def person_references
     references = Person.reflections.reject {|key, _|
-      %w[profile owner notifications pod].include?(key)
+      %w[profile owner notifications pod account_deletion account_migration].include?(key)
     }
 
     references.map {|key, value|

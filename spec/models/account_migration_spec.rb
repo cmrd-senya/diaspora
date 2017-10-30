@@ -68,7 +68,12 @@ describe AccountMigration, type: :model do
   end
 
   context "with local new user" do
+    include_context "with remote old user"
     include_context "with local new user"
+
+    let(:account_migration) {
+      AccountMigration.create!(old_person: old_person, new_person: new_person, old_private_key: old_user.encryption_key)
+    }
 
     describe "subscribers" do
       it "picks remote subscribers of new user profile and old person" do
@@ -126,6 +131,10 @@ describe AccountMigration, type: :model do
       include_context "with remote old user"
       include_context "with local new user"
 
+      let(:account_migration) {
+        AccountMigration.create!(old_person: old_person, new_person: new_person, old_private_key: old_user.encryption_key)
+      }
+
       it "dispatches account migration message" do
         expect(account_migration).to receive(:sender).twice.and_return(old_user)
         dispatcher = double
@@ -137,11 +146,13 @@ describe AccountMigration, type: :model do
       end
 
       it "doesn't run migration if old key is not provided" do
+        id = account_migration.id
+        account_migration = AccountMigration.find(id)
         expect(embedded_account_deleter).not_to receive(:tombstone_person_and_profile)
 
         expect {
           account_migration.perform!
-        }.to raise_error "can't build sender without old private key defined"
+        }.to raise_error AccountMigration::NoPrivateKeyProvided, "can't build sender without old private key defined"
       end
     end
 

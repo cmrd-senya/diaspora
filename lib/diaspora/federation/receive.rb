@@ -18,10 +18,10 @@ module Diaspora
       end
 
       def self.account_migration(entity)
-        old_person = author_of(entity)
+        old_person = Person.by_account_identifier(entity.old_user_id)
         profile = profile(entity.profile)
         return if AccountMigration.where(old_person: old_person, new_person: profile.person).exists?
-        AccountMigration.create!(old_person: old_person, new_person: profile.person)
+        AccountMigration.create!(old_person: old_person, new_person: profile.person, signature_body: entity.signature)
       rescue => e # rubocop:disable Lint/RescueWithoutErrorClass
         raise e unless AccountMigration.where(old_person: old_person, new_person: profile.person).exists?
         logger.warn "ignoring error on receive #{entity}: #{e.class}: #{e.message}"

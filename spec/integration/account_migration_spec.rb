@@ -103,6 +103,18 @@ shared_examples_for "migration scenarios initiated locally" do
   end
 end
 
+shared_examples_for "doesn't store signature in the DB" do
+  it "doesn't store signature in the DB" do
+    expect {
+      run_migration
+    }.not_to change(Signature, :count)
+
+    migration = AccountMigration.find_by(old_person: old_user.person, new_person: new_user.person)
+
+    expect(migration.signature).to be_nil
+  end
+end
+
 describe "account migration" do
   # this is the case when we receive account migration message from the federation
   context "remotely initiated" do
@@ -125,6 +137,8 @@ describe "account migration" do
       include_examples "every migration scenario"
 
       include_examples "migration scenarios initiated remotely"
+
+      include_examples "doesn't store signature in the DB"
     end
 
     # this is the case when we're a pod, which was left by a person in favor of remote one
@@ -149,6 +163,14 @@ describe "account migration" do
           run_migration
           user.reload
         end
+      end
+
+      it "stores signature of the new user" do
+        run_migration
+        migration = AccountMigration.find_by(old_person: old_user.person, new_person: new_user.person)
+        expect {
+          migration.verify_signature(new_user.diaspora_handle, :signature_body)
+        }.not_to raise_error
       end
     end
   end
@@ -176,6 +198,14 @@ describe "account migration" do
       it_behaves_like "migration scenarios initiated locally" do
         let!(:remote_contact) { create_remote_contact(new_user, "remote-friend.org") }
       end
+
+      it "stores signature of the old user" do
+        run_migration
+        migration = AccountMigration.find_by(old_person: old_user.person, new_person: new_user.person)
+        expect {
+          migration.verify_signature(old_user.diaspora_handle, :signature_body)
+        }.not_to raise_error
+      end
     end
 
     # this is the case when a user changes diaspora id but stays on the same pod
@@ -201,6 +231,8 @@ describe "account migration" do
       end
 
       it_behaves_like "it updates user references"
+
+      include_examples "doesn't store signature in the DB"
     end
   end
 end
