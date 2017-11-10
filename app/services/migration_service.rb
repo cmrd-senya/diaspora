@@ -1,0 +1,63 @@
+# frozen_string_literal: true
+
+class MigrationService
+  attr_reader :archive_path, :new_user_name
+  delegate :errors, :warnings, to: :archive_validator
+
+  def initialize(args)
+    @archive_path = args[:archive_path]
+    @new_user_name = args[:new_user_name]
+  end
+
+  def validate_archive
+    archive_validator.validate
+    raise ArchiveValidationFailed, errors.join("\n") if errors.any?
+  end
+
+  def perform!
+    find_or_create_user
+    import_archive
+    run_migration
+  end
+
+  private
+
+  def run_migration
+    account_migration.save
+    account_migration.perform!
+  end
+
+  def import_archive
+    archive_importer.import
+  end
+
+  def find_or_create_user
+    archive_importer.user = User.find_by(username: new_user_name)
+    archive_importer.create_user(new_user_name) if archive_importer.user.nil?
+  end
+
+  def account_migration
+    @account_migration ||= AccountMigration.new(
+      old_person:             Person.by_account_identifier(archive_importer.archive_author_diaspora_id),
+      new_person:             archive_importer.user.person,
+      old_private_key:        archive_importer.serialized_private_key,
+      old_person_diaspora_id: archive_importer.archive_author_diaspora_id
+    )
+  end
+
+  def archive_importer
+    @archive_importer ||= ArchiveImporter.new(archive_validator.archive_hash)
+  end
+
+  def archive_validator
+    @archive_validator ||= ArchiveValidator.new(archive_file)
+  end
+
+  def archive_file
+    # TODO: archive is likely to be a .json.gz file
+    File.new(archive_path, "r")
+  end
+
+  class ArchiveValidationFailed < RuntimeError
+  end
+end

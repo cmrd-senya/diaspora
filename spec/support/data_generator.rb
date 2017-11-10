@@ -32,6 +32,22 @@ class DataGenerator
     end
   end
 
+  def generic_data_for_archive
+    preferences
+    notifications
+    blocks
+    service
+    private_post_as_receipient
+    tag_following
+    remote_mutual_friend
+    private_status_message
+    mention
+    photo
+    conversations
+    role
+    activity
+  end
+
   def generic_user_data
     preferences
     notifications
