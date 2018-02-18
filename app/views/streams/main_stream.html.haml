@@ -5,7 +5,7 @@
 - content_for :head do
   - if AppConfig.chat.enabled?
     - if AppConfig.chat.frontend.eql? "converse"
-      = javascript_include_tag :converse, id: "converse",
+      = javascript_include_tag "converse-integration", id: "converse-js",
         data: {endpoint: get_bosh_endpoint}
     - else
       = javascript_include_tag :jsxc, id: "jsxc",

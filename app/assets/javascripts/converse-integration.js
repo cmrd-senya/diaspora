@@ -1,4 +1,4 @@
-//= require converse.js.js
+//= require converse
 
 // initialize converse xmpp client
 $(document).ready(function() {
@@ -6,7 +6,7 @@ $(document).ready(function() {
     $.post("/user/auth_token", null, function(data) {
       if (converse && data.token) {
         converse.initialize({
-            bosh_service_url: $("script#converse").data("endpoint"),
+            bosh_service_url: $("script#converse-js").data("endpoint"),
             auto_login: true,
             jid: app.currentUser.get("diaspora_id"),
             password: data.token,
