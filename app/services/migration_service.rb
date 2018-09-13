@@ -22,18 +22,18 @@ class MigrationService
 
   private
 
-  def run_migration
-    account_migration.save
-    account_migration.perform!
+  def find_or_create_user
+    archive_importer.user = User.find_by(username: new_user_name)
+    archive_importer.create_user(new_user_name) if archive_importer.user.nil?
   end
 
   def import_archive
     archive_importer.import
   end
 
-  def find_or_create_user
-    archive_importer.user = User.find_by(username: new_user_name)
-    archive_importer.create_user(new_user_name) if archive_importer.user.nil?
+  def run_migration
+    account_migration.save
+    account_migration.perform!
   end
 
   def account_migration
