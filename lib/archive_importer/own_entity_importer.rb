@@ -22,5 +22,9 @@ class ArchiveImporter
     def persisted_object
       @persisted_object ||= (instance if real_author == old_author_id)
     end
+
+    def real_author
+      instance.author.diaspora_handle
+    end
   end
 end

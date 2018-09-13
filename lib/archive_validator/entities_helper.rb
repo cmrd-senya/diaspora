@@ -24,10 +24,6 @@ class ArchiveValidator
       DiasporaFederation::Entity.entity_class(entity_type)
     end
 
-    def real_author
-      instance.author.diaspora_handle
-    end
-
     def guid
       @guid ||= entity_data.fetch("guid")
     end
