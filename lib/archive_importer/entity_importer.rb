@@ -6,7 +6,7 @@ class ArchiveImporter
     include Diaspora::Logging
 
     def initialize(json, user)
-      @object = json
+      @json = json
       @user = user
     end
 
@@ -16,12 +16,12 @@ class ArchiveImporter
       logger.warn "#{self}: #{e}"
     end
 
-    attr_reader :object
+    attr_reader :json
     attr_reader :user
     attr_accessor :persisted_object
 
     def entity
-      entity_class.from_json(object)
+      entity_class.from_json(json)
     end
   end
 end

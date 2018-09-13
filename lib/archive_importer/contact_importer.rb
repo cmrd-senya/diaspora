@@ -5,11 +5,11 @@ class ArchiveImporter
     include Diaspora::Logging
 
     def initialize(json, user)
-      @object = json
+      @json = json
       @user = user
     end
 
-    attr_reader :object
+    attr_reader :json
     attr_reader :user
 
     def import
@@ -22,7 +22,7 @@ class ArchiveImporter
     private
 
     def add_to_aspects
-      object.fetch("contact_groups_membership", []).each do |group_name|
+      json.fetch("contact_groups_membership", []).each do |group_name|
         aspect = user.aspects.find_by(name: group_name)
         if aspect.nil?
           logger.warn "#{self}: aspect \"#{group_name}\" is missing"
@@ -33,8 +33,8 @@ class ArchiveImporter
     end
 
     def create_contact
-      person = Person.by_account_identifier(object.fetch("account_id"))
-      user.contacts.create!(person_id: person.id, sharing: object.fetch("sharing"), receiving: false)
+      person = Person.by_account_identifier(json.fetch("account_id"))
+      user.contacts.create!(person_id: person.id, sharing: json.fetch("sharing"), receiving: false)
     end
   end
 end

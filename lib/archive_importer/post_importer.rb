@@ -20,7 +20,7 @@ class ArchiveImporter
     private
 
     def import_subscriptions
-      object.fetch("subscribed_users_ids", []).each do |diaspora_id|
+      json.fetch("subscribed_users_ids", []).each do |diaspora_id|
         begin
           person = Person.find_or_fetch_by_identifier(diaspora_id)
           person = person.account_migration.newest_person unless person.account_migration.nil?

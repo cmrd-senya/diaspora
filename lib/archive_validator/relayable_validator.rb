@@ -18,7 +18,7 @@ class ArchiveValidator
     end
 
     attr_reader :relayable
-    alias object relayable
+    alias json relayable
 
     # TODO: use diaspora federation to fetch parent where possible
     # For own relayables we could just use RelatedEntity.fetch;
@@ -45,6 +45,10 @@ class ArchiveValidator
       else
         post_find_by_guid(parent_guid)
       end
+    end
+
+    def parent_guid
+      entity_data.fetch("parent_guid")
     end
 
     def post_find_by_guid(guid)

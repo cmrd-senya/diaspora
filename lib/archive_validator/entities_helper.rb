@@ -9,11 +9,11 @@ class ArchiveValidator
     end
 
     def entity_type
-      object.fetch("entity_type")
+      json.fetch("entity_type")
     end
 
     def entity_data
-      object.fetch("entity_data")
+      json.fetch("entity_data")
     end
 
     def model_class
@@ -30,10 +30,6 @@ class ArchiveValidator
 
     def guid
       @guid ||= entity_data.fetch("guid")
-    end
-
-    def parent_guid
-      entity_data.fetch("parent_guid")
     end
 
     def to_s
