@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ArchiveValidator
-  class OthersDataValidator < CollectionValidator
+  class OthersRelayablesValidator < CollectionValidator
     def collection
       others_relayables
     end

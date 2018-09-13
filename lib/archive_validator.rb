@@ -42,7 +42,7 @@ class ArchiveValidator
     [
       ContactsValidator,
       RelayablesValidator,
-      OthersDataValidator
+      OthersRelayablesValidator
     ]
   end
 

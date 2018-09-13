@@ -61,7 +61,7 @@ describe ArchiveValidator do
         [
           ArchiveValidator::ContactsValidator,
           ArchiveValidator::RelayablesValidator,
-          ArchiveValidator::OthersDataValidator
+          ArchiveValidator::OthersRelayablesValidator
         ]
       )
     end
