@@ -7,7 +7,7 @@ namespace :accounts do
     process_arguments(args)
 
     begin
-      service = MigrationService.new(args)
+      service = MigrationService.new(args[:archive_path], args[:new_user_name])
       service.validate_archive
       puts "Warnings:\n#{service.warnings}\n-----" if service.warnings.any?
       # TODO: ask for confirmation

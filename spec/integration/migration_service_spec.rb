@@ -217,7 +217,7 @@ JSON
 
   shared_examples "imports archive" do
     it "imports archive" do
-      service = MigrationService.new(archive_path: archive_file.path, new_user_name: new_username)
+      service = MigrationService.new(archive_file.path, new_username)
       service.validate_archive
       expect(service.warnings).to be_empty
       service.perform!

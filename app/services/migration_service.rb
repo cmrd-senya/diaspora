@@ -4,9 +4,9 @@ class MigrationService
   attr_reader :archive_path, :new_user_name
   delegate :errors, :warnings, to: :archive_validator
 
-  def initialize(args)
-    @archive_path = args[:archive_path]
-    @new_user_name = args[:new_user_name]
+  def initialize(archive_path, new_user_name)
+    @archive_path = archive_path
+    @new_user_name = new_user_name
   end
 
   def validate_archive
