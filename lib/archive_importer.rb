@@ -77,7 +77,8 @@ class ArchiveImporter
       begin
         tag = ActsAsTaggableOn::Tag.find_or_create_by(name: tag_name)
         user.tag_followings.create!(tag: tag)
-      rescue ActiveRecord::RecordInvalid
+      rescue ActiveRecord::RecordInvalid => e
+        logger.warn "#{self}: #{e}"
       end
     end
   end
@@ -91,7 +92,8 @@ class ArchiveImporter
       end
       begin
         user.participations.create!(target: post)
-      rescue ActiveRecord::RecordInvalid
+      rescue ActiveRecord::RecordInvalid => e
+        logger.warn "#{self}: #{e}"
       end
     end
   end
