@@ -3,7 +3,6 @@
 require "integration/archive_shared"
 
 describe ArchiveValidator do
-  let(:json_string) { archive }
   let(:json_file) { StringIO.new(json_string) }
   let(:archive_validator) { ArchiveValidator.new(json_file) }
 

@@ -9,12 +9,12 @@ describe MigrationService do
   let(:archive_private_key) { OpenSSL::PKey::RSA.generate(1024) }
   let(:contact1_diaspora_id) { Fabricate.sequence(:diaspora_id) }
   let(:contact2_diaspora_id) { Fabricate.sequence(:diaspora_id) }
-  let(:subscription1_guid) { UUID.generate(:compact) } # Unknown subscription
-  let(:subscription2_guid) { UUID.generate(:compact) } # Existing subscription
+  let(:unknown_subscription_guid) { UUID.generate(:compact) }
+  let(:existing_subscription_guid) { UUID.generate(:compact) }
   let(:reshare_entity) { Fabricate(:reshare_entity, author: archive_author) }
-  let(:status_message_entity) { Fabricate(:status_message_entity, author: archive_author, public: false) }
-  let(:status_message2_entity) { Fabricate(:status_message_entity, author: archive_author, public: false) }
-  let(:status_message3_entity) { Fabricate(:status_message_entity, author: archive_author) }
+  let(:unknown_status_message_entity) { Fabricate(:status_message_entity, author: archive_author, public: false) }
+  let(:known_status_message_entity) { Fabricate(:status_message_entity, author: archive_author, public: false) }
+  let(:colliding_status_message_entity) { Fabricate(:status_message_entity, author: archive_author) }
   let(:status_message_with_poll_entity) {
     Fabricate(:status_message_entity,
               author: archive_author,
@@ -62,7 +62,7 @@ describe MigrationService do
   let(:others_comment_entity) {
     data = Fabricate.attributes_for(:comment_entity,
                                     author:      remote_user_on_pod_b.diaspora_handle,
-                                    parent_guid: status_message_entity.guid)
+                                    parent_guid: unknown_status_message_entity.guid)
     data[:author_signature] = Fabricate(:comment_entity, data).sign_with_key(remote_user_on_pod_b.encryption_key)
     Fabricate(:comment_entity, data)
   }
@@ -75,9 +75,9 @@ describe MigrationService do
   let(:posts_in_archive) {
     [
       reshare_entity,
-      status_message_entity, # unknown message
-      status_message2_entity, # known message
-      status_message3_entity, # colliding message
+      unknown_status_message_entity,
+      known_status_message_entity,
+      colliding_status_message_entity,
       status_message_with_poll_entity,
       status_message_with_location_entity,
       status_message_with_photos_entity
@@ -141,8 +141,8 @@ describe MigrationService do
           {"name":"Friends","chat_enabled":false}
         ],
         "post_subscriptions": [
-          "#{subscription1_guid}",
-          "#{subscription2_guid}"
+          "#{unknown_subscription_guid}",
+          "#{existing_subscription_guid}"
         ],
         "posts": #{render_posts},
         "relayables": [
@@ -177,7 +177,7 @@ JSON
 
   let(:post_subscriber) { FactoryGirl.create(:person) }
   let!(:known_contact_person) { FactoryGirl.create(:person, diaspora_handle: contact1_diaspora_id) }
-  let!(:collided_status_message) { FactoryGirl.create(:status_message, guid: status_message3_entity.guid) }
+  let!(:collided_status_message) { FactoryGirl.create(:status_message, guid: colliding_status_message_entity.guid) }
   let!(:collided_like) { FactoryGirl.create(:like, guid: like_entity.guid) }
   let!(:reshare_root_author) { FactoryGirl.create(:person, diaspora_handle: reshare_entity.root_author) }
   let(:new_username) { "newuser" }
@@ -199,8 +199,8 @@ JSON
       FactoryGirl.create(:status_message, guid: comment_entity.parent_guid)
     }
 
-    expect_relayable_parent_fetch(archive_author, subscription1_guid) {
-      FactoryGirl.create(:status_message, guid: subscription1_guid)
+    expect_relayable_parent_fetch(archive_author, unknown_subscription_guid) {
+      FactoryGirl.create(:status_message, guid: unknown_subscription_guid)
     }
 
     expect_relayable_parent_fetch(archive_author, unknown_poll_guid, "Poll") {
@@ -233,12 +233,12 @@ JSON
         expect(existing_contact.receiving).to be_truthy
       end
 
-      status_message = StatusMessage.find_by(guid: status_message_entity.guid)
+      status_message = StatusMessage.find_by(guid: unknown_status_message_entity.guid)
       expect(status_message.author).to eq(user.person)
       # TODO: rewrite this expectation when new subscription implementation is there
       # expect(status_message.participants).to include(post_subscriber)
 
-      status_message = StatusMessage.find_by(guid: status_message2_entity.guid)
+      status_message = StatusMessage.find_by(guid: known_status_message_entity.guid)
       expect(status_message.author).to eq(user.person)
       # TODO: rewrite this expectation when new subscription implementation is there
       # expect(status_message.participants).to include(post_subscriber)
@@ -320,10 +320,12 @@ JSON
     let!(:existing_subscription) {
       FactoryGirl.create(:participation,
                          author: old_person,
-                         target: FactoryGirl.create(:status_message, guid: subscription2_guid))
+                         target: FactoryGirl.create(:status_message, guid: existing_subscription_guid))
     }
     let!(:existing_status_message) {
-      FactoryGirl.create(:status_message, author: old_person, guid: status_message2_entity.guid).tap {|status_message|
+      FactoryGirl.create(:status_message,
+                         author: old_person,
+                         guid:   known_status_message_entity.guid).tap {|status_message|
         status_message.participants << post_subscriber
       }
     }
@@ -339,8 +341,8 @@ JSON
       stub_request(:get, %r{https*://#{old_pod_hostname}/\.well-known/host-meta})
         .to_return(status: 404)
 
-      expect_relayable_parent_fetch(archive_author, subscription2_guid) {
-        FactoryGirl.create(:status_message, guid: subscription2_guid)
+      expect_relayable_parent_fetch(archive_author, existing_subscription_guid) {
+        FactoryGirl.create(:status_message, guid: existing_subscription_guid)
       }
     end
 

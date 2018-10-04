@@ -11,8 +11,8 @@ class ArchiveValidator
   end
 
   def validate
-    run_validators(self.class.critical_validators, errors)
-    run_validators(self.class.non_critical_validators, warnings)
+    run_validators(CRITICAL_VALIDATORS, errors)
+    run_validators(NON_CRITICAL_VALIDATORS, warnings)
   rescue KeyError => e
     errors.push("Missing mandatory data: #{e}")
   rescue Yajl::ParseError => e
@@ -31,20 +31,18 @@ class ArchiveValidator
     @archive_hash ||= Yajl::Parser.new.parse(archive)
   end
 
-  def self.critical_validators
-    [
-      SchemaValidator,
-      AuthorPrivateKeyValidator
-    ]
-  end
+  CRITICAL_VALIDATORS = [
+    SchemaValidator,
+    AuthorPrivateKeyValidator
+  ].freeze
 
-  def self.non_critical_validators
-    [
-      ContactsValidator,
-      RelayablesValidator,
-      OthersRelayablesValidator
-    ]
-  end
+  NON_CRITICAL_VALIDATORS = [
+    ContactsValidator,
+    RelayablesValidator,
+    OthersRelayablesValidator
+  ].freeze
+
+  private_constant :CRITICAL_VALIDATORS, :NON_CRITICAL_VALIDATORS
 
   private
 

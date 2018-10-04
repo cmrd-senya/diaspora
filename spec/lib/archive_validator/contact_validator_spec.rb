@@ -6,8 +6,6 @@ describe ArchiveValidator::ContactValidator do
   include_context "validators shared context"
   include_context "with known author"
 
-  let(:known_id) { FactoryGirl.create(:person).diaspora_handle }
-  let(:unknown_id) { Fabricate.sequence(:diaspora_id) }
   let(:validator) { described_class.new(input_hash, contact) }
 
   before do
@@ -19,6 +17,8 @@ describe ArchiveValidator::ContactValidator do
   end
 
   context "with a correct contact" do
+    let(:known_id) { FactoryGirl.create(:person).diaspora_handle }
+
     before do
       include_in_input_archive(
         user: {contact_groups: [{name: "generic"}]}
@@ -36,6 +36,8 @@ describe ArchiveValidator::ContactValidator do
   end
 
   context "when person referenced in contact is unknown" do
+    let(:unknown_id) { Fabricate.sequence(:diaspora_id) }
+
     let(:contact) {
       {
         "account_id" => unknown_id
