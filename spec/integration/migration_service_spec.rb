@@ -12,6 +12,9 @@ describe MigrationService do
   let(:unknown_subscription_guid) { UUID.generate(:compact) }
   let(:existing_subscription_guid) { UUID.generate(:compact) }
   let(:reshare_entity) { Fabricate(:reshare_entity, author: archive_author) }
+  let(:reshare_entity_with_no_root) {
+    Fabricate(:reshare_entity, author: archive_author, root_guid: nil, root_author: nil)
+  }
   let(:unknown_status_message_entity) { Fabricate(:status_message_entity, author: archive_author, public: false) }
   let(:known_status_message_entity) { Fabricate(:status_message_entity, author: archive_author, public: false) }
   let(:colliding_status_message_entity) { Fabricate(:status_message_entity, author: archive_author) }
@@ -77,6 +80,7 @@ describe MigrationService do
       reshare_entity,
       unknown_status_message_entity,
       known_status_message_entity,
+      reshare_entity_with_no_root,
       colliding_status_message_entity,
       status_message_with_poll_entity,
       status_message_with_location_entity,
@@ -95,6 +99,7 @@ describe MigrationService do
     posts[4]["subscribed_pods_uris"] = []
     posts[5]["subscribed_pods_uris"] = []
     posts[6]["subscribed_pods_uris"] = []
+    posts[7]["subscribed_pods_uris"] = []
     posts.to_json
   end
 
@@ -227,7 +232,9 @@ JSON
 
       service = MigrationService.new(archive_file.path, new_username)
       service.validate
-      expect(service.warnings).to be_empty
+      expect(service.warnings).to eq(
+        ["reshare Reshare:#{reshare_entity_with_no_root.guid} doesn't have a root, ignored"]
+      )
       service.perform!
       user = User.find_by(username: new_username)
       expect(user).not_to be_nil

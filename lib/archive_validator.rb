@@ -38,6 +38,7 @@ class ArchiveValidator
 
   NON_CRITICAL_VALIDATORS = [
     ContactsValidator,
+    PostsValidator,
     RelayablesValidator,
     OthersRelayablesValidator
   ].freeze
