@@ -9,9 +9,10 @@ class MigrationService
     @new_user_name = new_user_name
   end
 
-  def validate_archive
+  def validate
     archive_validator.validate
     raise ArchiveValidationFailed, errors.join("\n") if errors.any?
+    raise MigrationAlreadyExists if AccountMigration.where(old_person: old_person).any?
   end
 
   def perform!
@@ -38,10 +39,16 @@ class MigrationService
 
   def account_migration
     @account_migration ||= AccountMigration.new(
-      old_person:             Person.by_account_identifier(archive_importer.archive_author_diaspora_id),
+      old_person:             old_person,
       new_person:             archive_importer.user.person,
       old_private_key:        archive_importer.serialized_private_key,
       old_person_diaspora_id: archive_importer.archive_author_diaspora_id
+    )
+  end
+
+  def old_person
+    @old_person ||= Person.by_account_identifier(
+      archive_validator.archive_hash.fetch("user").fetch("profile").fetch("entity_data").fetch("author")
     )
   end
 
@@ -59,5 +66,8 @@ class MigrationService
   end
 
   class ArchiveValidationFailed < RuntimeError
+  end
+
+  class MigrationAlreadyExists < RuntimeError
   end
 end

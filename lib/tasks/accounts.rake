@@ -8,7 +8,7 @@ namespace :accounts do
 
     begin
       service = MigrationService.new(args[:archive_path], args[:new_user_name])
-      service.validate_archive
+      service.validate
       puts "Warnings:\n#{service.warnings}\n-----" if service.warnings.any?
       # TODO: ask for confirmation
       start_time = Time.now.getlocal
@@ -17,6 +17,8 @@ namespace :accounts do
       puts "Migration took #{Time.now.getlocal - start_time} seconds"
     rescue MigrationService::ArchiveValidationFailed => exception
       puts "Errors in the archive found:\n#{exception.message}\n-----"
+    rescue MigrationService::MigrationAlreadyExists
+      puts "Migration record already exists for the user, can't continue"
     end
   end
 

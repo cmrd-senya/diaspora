@@ -185,22 +185,12 @@ JSON
 
   let(:archive_file) { Tempfile.new("archive") }
 
-  before do
-    archive_file.write(archive_json)
-    archive_file.close
-    allow_callbacks(
-      %i[queue_public_receive fetch_related_entity fetch_person_url_to fetch_public_key receive_entity
-         fetch_private_key]
-    )
+  def setup_validation_time_expectations
     expect_person_fetch(contact2_diaspora_id, nil)
 
     # This is expected to be called during relayable validation
     expect_relayable_parent_fetch(archive_author, comment_entity.parent_guid) {
       FactoryGirl.create(:status_message, guid: comment_entity.parent_guid)
-    }
-
-    expect_relayable_parent_fetch(archive_author, unknown_subscription_guid) {
-      FactoryGirl.create(:status_message, guid: unknown_subscription_guid)
     }
 
     expect_relayable_parent_fetch(archive_author, unknown_poll_guid, "Poll") {
@@ -210,15 +200,33 @@ JSON
         guid: unknown_poll_answer_guid
       )
     }
+  end
 
-    # This is expected to be called during post import
-    expect_reshare_root_fetch(reshare_root_author, reshare_entity.root_guid)
+  before do
+    archive_file.write(archive_json)
+    archive_file.close
+    allow_callbacks(
+      %i[queue_public_receive fetch_related_entity fetch_person_url_to fetch_public_key receive_entity
+         fetch_private_key]
+    )
+
+    setup_validation_time_expectations
   end
 
   shared_examples "imports archive" do
+    def setup_import_time_expectations
+      expect_relayable_parent_fetch(archive_author, unknown_subscription_guid) {
+        FactoryGirl.create(:status_message, guid: unknown_subscription_guid)
+      }
+
+      expect_reshare_root_fetch(reshare_root_author, reshare_entity.root_guid)
+    end
+
     it "imports archive" do
+      setup_import_time_expectations
+
       service = MigrationService.new(archive_file.path, new_username)
-      service.validate_archive
+      service.validate
       expect(service.warnings).to be_empty
       service.perform!
       user = User.find_by(username: new_username)
@@ -331,6 +339,18 @@ JSON
     }
 
     include_examples "imports archive"
+
+    context "when account migration already exists" do
+      before do
+        FactoryGirl.create(:account_migration, old_person: old_person)
+      end
+
+      it "raises exception" do
+        expect {
+          MigrationService.new(archive_file.path, new_username).validate
+        }.to raise_error(MigrationService::MigrationAlreadyExists)
+      end
+    end
   end
 
   context "old user is unknown and non-fetchable" do
