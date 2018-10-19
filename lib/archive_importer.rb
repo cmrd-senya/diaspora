@@ -22,7 +22,7 @@ class ArchiveImporter
 
   def create_user(username, email=nil)
     allowed_keys = %w[
-      email strip_exif show_community_spotlight_in_stream language auto_follow_back_aspect disable_mail auto_follow_back
+      email strip_exif show_community_spotlight_in_stream language disable_mail auto_follow_back
     ]
     data = convert_keys(archive_hash["user"], allowed_keys)
     new_password = SecureRandom.hex
@@ -44,6 +44,13 @@ class ArchiveImporter
     import_collection(contacts, ContactImporter)
   end
 
+  def set_auto_follow_back_aspect
+    name = archive_hash["user"]["auto_follow_back_aspect"]
+    return if name.nil?
+    aspect = user.aspects.find_by(name: name)
+    user.update(auto_follow_back_aspect: aspect) if aspect
+  end
+
   def import_aspects
     contact_groups.each do |group|
       begin
@@ -52,6 +59,7 @@ class ArchiveImporter
         logger.warn "#{self}: #{e}"
       end
     end
+    set_auto_follow_back_aspect
   end
 
   def import_posts

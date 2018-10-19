@@ -3,21 +3,27 @@
 require "integration/federation/federation_helper"
 
 describe ArchiveImporter do
+  let(:archive_importer) { ArchiveImporter.new(archive_hash) }
+
   describe "#import" do
-    let(:archive_importer) { ArchiveImporter.new(archive_hash) }
     let(:target) { FactoryGirl.create(:user) }
 
     context "with duplicates" do
       let(:archive_hash) {
         {
           "user" => {
-            "profile"            => {
+            "auto_follow_back_aspect" => "Friends",
+            "profile"                 => {
               "entity_data" => {
                 "author" => "old_id@old_pod.nowhere"
               }
             },
-            "followed_tags"      => [target.tag_followings.first.tag.name],
-            "post_subscriptions" => [target.participations.first.target.guid]
+            "contact_groups"          => [{
+              "chat_enabled" => true,
+              "name"         => "Friends"
+            }],
+            "followed_tags"           => [target.tag_followings.first.tag.name],
+            "post_subscriptions"      => [target.participations.first.target.guid]
           }
         }
       }
@@ -62,6 +68,32 @@ describe ArchiveImporter do
           archive_importer.import
         }.not_to raise_error
       end
+    end
+  end
+
+  describe "#create_user" do
+    let(:archive_hash) {
+      {
+        "user" => {
+          "auto_follow_back_aspect" => "Friends",
+          "profile"                 => {
+            "entity_data" => {
+              "author" => "old_id@old_pod.nowhere"
+            }
+          },
+          "contact_groups"          => [{
+            "chat_enabled" => true,
+            "name"         => "Friends"
+          }],
+          "email"                   => "user@example.com"
+        }
+      }
+    }
+
+    it "creates user" do
+      expect {
+        archive_importer.create_user("new_name")
+      }.to change(User, :count).by(1)
     end
   end
 end
