@@ -21,6 +21,11 @@ class MigrationService
     run_migration
   end
 
+  # TODO: test
+  def only_import?
+    old_person.nil?
+  end
+
   private
 
   def find_or_create_user
