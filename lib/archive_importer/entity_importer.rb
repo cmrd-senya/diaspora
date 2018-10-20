@@ -14,6 +14,7 @@ class ArchiveImporter
       self.persisted_object = Diaspora::Federation::Receive.perform(entity)
     rescue DiasporaFederation::Entities::Signable::SignatureVerificationFailed => e
       logger.warn "#{self}: #{e}"
+    rescue DiasporaFederation::Discovery::InvalidDocument
     end
 
     attr_reader :json
